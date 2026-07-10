@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Cozy Gallery & Arcade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f7f1e3; /* Cozy cream background */
+            color: #402d20; /* Warm brown text */
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .cozy-card {
+            background-color: #fffaf0;
+            border: 2px solid #d1ccc0;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6">
+
+    <header class="text-center my-8">
+        <h1 class="text-4xl font-bold mb-2">🍂 The Cozy Gallery ☕</h1>
+        <p class="text-sm opacity-75">A warm space to share art and play gentle games. <span id="slot-counter">0/250</span> slots filled.</p>
+        
+        <div class="mt-6 space-x-4">
+            <button onclick="switchTab('gallery')" class="px-4 py-2 cozy-card hover:bg-[#f5ebd6] transition font-bold">🎨 Art Gallery</button>
+            <button onclick="switchTab('arcade')" class="px-4 py-2 cozy-card hover:bg-[#f5ebd6] transition font-bold">🎮 Cozy Arcade (5 Games)</button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto">
+        
+        <section id="gallery-tab" class="tab-content">
+            <div class="mb-6 text-center">
+                <label class="cozy-card px-4 py-2 cursor-pointer inline-block hover:bg-[#f5ebd6] font-semibold">
+                    ✨ Upload Your Art
+                    <input type="file" id="art-upload" accept="image/*" class="hidden" onchange="uploadArt(event)">
+                </label>
+            </div>
+            
+            <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-3 p-4 cozy-card">
+                </div>
+        </section>
+
+        <section id="arcade-tab" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div class="cozy-card p-6 flex flex-col items-center justify-between text-center">
+                    <h3 class="text-xl font-bold mb-2">🍵 1. Perfect Tea Steeper</h3>
+                    <p class="text-xs mb-4">Click "Stop" exactly at 5.00 seconds for the perfect brew!</p>
+                    <div id="tea-timer" class="text-3xl font-bold mb-4">0.00s</div>
+                    <button id="tea-btn" onclick="toggleTeaTimer()" class="w-full bg-[#d1ccc0] py-2 rounded font-semibold">Start Steeping</button>
+                </div>
+
+                <div class="cozy-card p-6 flex flex-col items-center justify-between text-center">
+                    <h3 class="text-xl font-bold mb-2">🌧️ 2. Lo-Fi Rain Mixer</h3>
+                    <p class="text-xs mb-4">Simulated ambiance generator. Adjust the slider to match your vibe.</p>
+                    <input type="range" min="0" max="100" value="30" class="w-full mb-4" oninput="updateRain(this.value)">
+                    <div id="rain-status" class="text-sm italic">Cozy visual drizzle: 30% intensity</div>
+                </div>
+
+                <div class="cozy-card p-6 flex flex-col items-center justify-between text-center">
+                    <h3 class="text-xl font-bold mb-2">🥐 3. Bakery Clicker</h3>
+                    <p class="text-xs mb-4">Click the croissant to bake delicious treats for the gallery.</p>
+                    <button onclick="bakeCroissant()" class="text-5xl my-2 transform active:scale-95 transition">🥐</button>
+                    <div id="bakery-count" class="text-md font-semibold">0 Croissants Baked</div>
+                </div>
+
+                <div class="cozy-card p-6 flex flex-col items-center justify-between text-center">
+                    <h3 class="text-xl font-bold mb-2">🐱 4. Lucky Cat Tarot</h3>
+                    <p class="text-xs mb-4">Give the lucky cat a head pat to receive a cozy piece of daily advice.</p>
+                    <button onclick="getFortune()" class="text-5xl my-2">🐾</button>
+                    <div id="fortune-text" class="text-xs italic px-2 mt-2">"Click my paw for wisdom..."</div>
+                </div>
+
+                <div class="cozy-card p-6 flex flex-col items-center justify-between text-center">
+                    <h3 class="text-xl font-bold mb-2">🌱 5. Zen Bonsai</h3>
+                    <p class="text-xs mb-4">Water your digital bonsai tree to help it mature.</p>
+                    <div id="bonsai-stage" class="text-5xl my-2">🌱</div>
+                    <button onclick="waterPlant()" class="w-full bg-[#d1ccc0] py-2 rounded font-semibold">💧 Water Bonsai</button>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const MAX_SLOTS = 250;
+        let artSlots = JSON.parse(localStorage.getItem('cozyArtGrid')) || Array(MAX_SLOTS).fill(null);
+
+        // Initialize App
+        function init() {
+            renderGrid();
+            updateCounter();
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            document.getElementById('gallery-tab').classList.toggle('hidden', tabName !== 'gallery');
+            document.getElementById('arcade-tab').classList.toggle('hidden', tabName !== 'arcade');
+        }
+
+        // Render the 250 Slots
+        function renderGrid() {
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '';
+            
+            artSlots.forEach((slot, index) => {
+                const cell = document.createElement('div');
+                cell.className = "aspect-square cozy-card flex items-center justify-center relative overflow-hidden group bg-stone-100 border border-dashed border-stone-400";
+                
+                if (slot) {
+                    const img = document.createElement('img');
+                    img.src = slot;
+                    img.className = "w-full h-full object-cover";
+                    cell.appendChild(img);
+                    
+                    // Delete button on hover
+                    const delBtn = document.createElement('button');
+                    delBtn.innerHTML = "✖";
+                    delBtn.className = "absolute top-1 right-1 bg-red-400 text-white rounded-full w-5 h-5 text-[10px] hidden group-hover:flex items-center justify-center opacity-80 hover:opacity-100";
+                    delBtn.onclick = (e) => { e.stopPropagation(); removeArt(index); };
+                    cell.appendChild(delBtn);
+                } else {
+                    cell.innerHTML = `<span class="text-[10px] text-gray-400">${index + 1}</span>`;
+                }
+                grid.appendChild(cell);
+            });
+        }
+
+        // Upload functionality
+        function uploadArt(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const nextEmptyIndex = artSlots.findIndex(slot => slot === null);
+            if (nextEmptyIndex === -1) {
+                alert("Oh no! All 250 gallery slots are completely filled!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                artSlots[nextEmptyIndex] = e.target.result;
+                localStorage.setItem('cozyArtGrid', JSON.stringify(artSlots));
+                renderGrid();
+                updateCounter();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeArt(index) {
+            artSlots[index] = null;
+            localStorage.setItem('cozyArtGrid', JSON.stringify(artSlots));
+            renderGrid();
+            updateCounter();
+        }
+
+        function updateCounter() {
+            const activeCount = artSlots.filter(s => s !== null).length;
+            document.getElementById('slot-counter').innerText = `${activeCount}/${MAX_SLOTS}`;
+        }
+
+        // --- THE 5 COZY MINI-GAMES LOGIC ---
+
+        // Game 1: Tea Timer
+        let teaInterval;
+        let teaSeconds = 0;
+        function toggleTeaTimer() {
+            const btn = document.getElementById('tea-btn');
+            const display = document.getElementById('tea-timer');
+            if (btn.innerText === "Start Steeping") {
+                teaSeconds = 0;
+                btn.innerText = "Stop!";
+                teaInterval = setInterval(() => {
+                    teaSeconds += 0.01;
+                    display.innerText = teaSeconds.toFixed(2) + 's';
+                }, 10);
+            } else {
+                clearInterval(teaInterval);
+                btn.innerText = "Start Steeping";
+                const diff = Math.abs(teaSeconds - 5.00);
+                if (diff < 0.15) display.innerText = "Perfect Brew! 🍵";
+                else if (teaSeconds < 5) display.innerText = "Too weak! 🧊";
+                else display.innerText = "Too bitter! 🍂";
+            }
+        }
+
+        // Game 2: Rain Soundboard
+        function updateRain(val) {
+            let desc = "Calm overcast skies.";
+            if (val > 25) desc = "Soft, comforting patter on the glass window.";
+            if (val > 65) desc = "Steady, warm summer downpour. Perfect for blankets.";
+            if (val > 90) desc = "Heavy ambient thunderstorm vibes.";
+            document.getElementById('rain-status').innerText = `Cozy intensity: ${val}% - ${desc}`;
+        }
+
+        // Game 3: Pastry Clicker
+        let pastries = 0;
+        function bakeCroissant() {
+            pastries++;
+            document.getElementById('bakery-count').innerText = `${pastries} Croissants Baked`;
+        }
+
+        // Game 4: Fortune Cat
+        const fortunes = [
+            "Your creative side will flourish unexpectedly today.",
+            "Take a deep breath. Slow down. The art can wait.",
+            "A warm drink and a short break will solve your current block.",
+            "The mistake you just made will make a beautiful design feature.",
+            "Be proud of what you are making, even if it is a draft."
+        ];
+        function getFortune() {
+            const random = fortunes[Math.floor(Math.random() * fortunes.length)];
+            document.getElementById('fortune-text').innerText = `"${random}"`;
+        }
+
+        // Game 5: Plant Grower
+        let waterings = 0;
+        const plantStages = ['🌱', '🌿', '🪴', '🌳', '🌸✨'];
+        function waterPlant() {
+            waterings++;
+            let stageIdx = Math.min(Math.floor(waterings / 3), plantStages.length - 1);
+            document.getElementById('bonsai-stage').innerText = plantStages[stageIdx];
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
