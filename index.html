@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Cozy Corner</title>
+    <style>
+        :root {
+            --bg-color: #f7f1e3;
+            --card-color: #fcf8f2;
+            --text-dark: #5d4037;
+            --accent-warm: #d87040;
+            --accent-soft: #8caba1;
+            --border-color: #e0d4c3;
+            --input-bg: #ffffff;
+            --input-text: #5d4037;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(to bottom, #f3e5d8, var(--bg-color));
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+            color: var(--text-dark);
+        }
+
+        header p {
+            margin: 0;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        nav button, .music-toggle, .song-select, .btn-secondary {
+            background-color: var(--card-color);
+            border: 2px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        nav button:hover, nav button.active {
+            background-color: var(--accent-soft);
+            color: white;
+            border-color: var(--accent-soft);
+        }
+
+        .music-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-color: var(--accent-soft);
+            color: var(--text-dark);
+        }
+
+        .music-toggle.playing {
+            background-color: var(--accent-soft);
+            color: white;
+        }
+
+        .song-select {
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            padding: 9px 15px;
+        }
+
+        .gallery-toolbar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin-bottom: 60px;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Art Gallery Styles displaying all 250 items */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .art-slot {
+            background-color: var(--card-color);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+            padding: 5px;
+        }
+
+        .art-slot:hover {
+            transform: scale(1.04);
+            border-color: var(--accent-warm);
+        }
+
+        .art-slot.filled {
+            border-style: solid;
+        }
+
+        .art-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .art-slot .procedural-art {
+            font-size: 2.5rem;
+            user-select: none;
+        }
+
+        .art-slot .slot-number {
+            position: absolute;
+            top: 5px;
+            left: 8px;
+            font-size: 0.75rem;
+            opacity: 0.5;
+            z-index: 2;
+        }
+
+        .upload-icon {
+            font-size: 1.5rem;
+            color: var(--border-color);
+            margin-bottom: 3px;
+        }
+
+        .art-slot:hover .upload-icon {
+            color: var(--accent-warm);
+        }
+
+        .art-slot input[type="file"] {
+            display: none;
+        }
+
+        /* Games Section Styles */
+        .games-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+        }
+
+        .games-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .game-btn {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            transition: background 0.2s, color 0.3s, border-color 0.3s;
+        }
+
+        .game-btn:hover, .game-btn.active {
+            background-color: #f3e5d8;
+            border-color: var(--accent-warm);
+        }
+
+        body[style*="--bg-color: #2c2523"] .game-btn:hover,
+        body[style*="--bg-color: #2c2523"] .game-btn.active {
+            background-color: #4a3b37;
+            color: #ffffff;
+        }
+
+        .game-display {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .game-content {
+            display: none;
+            width: 100%;
+            text-align: center;
+        }
+
+        .game-content.active {
+            display: block;
+        }
+
+        #scrambled-txt {
+            color: var(--text-dark);
+        }
+
+        .mixer-panel {
+            max-width: 400px;
+            margin: 20px auto;
+            background: rgba(0,0,0,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        body[style*="--bg-color: #2c2523"] .mixer-panel {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .mixer-channel {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .mixer-channel label {
+            font-weight: bold;
+            width: 100px;
+            text-align: left;
+        }
+
+        .mixer-channel input[type="range"] {
+            flex-grow: 1;
+            margin-left: 10px;
+            accent-color: var(--accent-soft);
+        }
+
+        .btn-action {
+            background-color: var(--accent-warm);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        .btn-action:hover { opacity: 0.9; }
+
+        .cozy-canvas {
+            border: 1px solid var(--border-color);
+            background: white;
+            cursor: crosshair;
+            border-radius: 8px;
+            max-width: 100%;
+        }
+
+        .color-picker {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .color-dot {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .color-dot.active { border-color: var(--text-dark); }
+
+        .big-emoji {
+            font-size: 5rem;
+            margin: 20px 0;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>The Cozy Corner</h1>
+        <p>A quiet place to share art, sip tea, and unwind.</p>
+        <div class="header-controls">
+            <nav>
+                <button id="nav-gallery" class="active" onclick="switchView('gallery')">Art Gallery (250 Slots)</button>
+                <button id="nav-games" onclick="switchView('games')">Cozy Games (5)</button>
+            </nav>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <select id="song-select" class="song-select" onchange="changeSong()">
+                    <option value="0">Song 1: Warm Blanket</option>
+                    <option value="1">Song 2: Morning Fog</option>
+                    <option value="2">Song 3: Steaming Cup</option>
+                    <option value="3">Song 4: Gentle Rain</option>
+                    <option value="4">Song 5: Lazy Sunday</option>
+                    <option value="5">Song 6: Dreamcatcher</option>
+                    <option value="6">Song 7: Twilight Sky</option>
+                </select>
+                <button id="music-btn" class="music-toggle" onclick="toggleCalmMusic()">
+                    <span>🎵</span> Turn Music On
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Gallery Section -->
+        <section id="gallery-view" class="view-section active">
+            <div class="gallery-toolbar">
+                <button class="btn-secondary" onclick="autofillGallery()">✨ Fill Empty Slots with Custom Art</button>
+                <button class="btn-secondary" style="border-color: #d9a3a3;" onclick="clearAllGallery()">🗑️ Clear Gallery</button>
+            </div>
+            <div class="gallery-grid" id="gallery-grid"></div>
+        </section>
+
+        <!-- Games Section -->
+        <section id="games-view" class="view-section">
+            <div class="games-layout">
+                <div class="games-list">
+                    <button class="game-btn active" onclick="switchGame(1, this)">1. Tea Steeper</button>
+                    <button class="game-btn" onclick="switchGame(2, this)">2. Mini Doodle Pad</button>
+                    <button class="game-btn" onclick="switchGame(3, this)">3. Grow a Plant</button>
+                    <button class="game-btn" onclick="switchGame(4, this)">4. Lo-Fi Rain Mixer</button>
+                    <button class="game-btn" onclick="switchGame(5, this)">5. Fortune Teacup</button>
+                </div>
+                
+                <div class="game-display">
+                    <!-- Game 1: Tea Steeper -->
+                    <div id="game-1" class="game-content active">
+                        <h3>Tea Steeper</h3>
+                        <p>Tap the mug to brew your tea.</p>
+                        <div class="big-emoji" style="cursor:pointer;" onclick="brewTea()">☕</div>
+                        <p>Cups Brewed: <span id="tea-count">0</span></p>
+                    </div>
+
+                    <!-- Game 2: Mini Doodle Pad -->
+                    <div id="game-2" class="game-content">
+                        <h3>Mini Doodle Pad</h3>
+                        <p>Clear your mind with a quick sketch.</p>
+                        <canvas id="doodleCanvas" width="400" height="250" class="cozy-canvas"></canvas>
+                        <div class="color-picker">
+                            <div class="color-dot active" style="background: #5d4037;" onclick="setDoodleColor('#5d4037', this)"></div>
+                            <div class="color-dot" style="background: #d87040;" onclick="setDoodleColor('#d87040', this)"></div>
+                            <div class="color-dot" style="background: #8caba1;" onclick="setDoodleColor('#8caba1', this)"></div>
+                            <button onclick="clearCanvas()" style="cursor:pointer;">Clear</button>
+                        </div>
+                    </div>
+
+                    <!-- Game 3: Grow a Plant -->
+                    <div id="game-3" class="game-content">
+                        <h3>Grow a Plant</h3>
+                        <p>Give your little seedling some water to watch it grow.</p>
+                        <div class="big-emoji" id="plant-stage">🌱</div>
+                        <button class="btn-action" onclick="waterPlant()">Water Plant</button>
+                        <button class="btn-action" onclick="resetPlant()" style="background:#8caba1;">New Seed</button>
+                    </div>
+
+                    <!-- Game 4: Lo-Fi Rain Mixer -->
+                    <div id="game-4" class="game-content">
+                        <h3>Lo-Fi Rain Mixer</h3>
+                        <p>Activate and slide to mix your perfect background ambience environment.</p>
+                        <button class="btn-action" id="mixer-toggle-btn" onclick="toggleMixerSystem()">▶ Start Mixer Engine</button>
+                        
+                        <div class="mixer-panel">
+                            <div class="mixer-channel">
+                                <label>🌧️ Rain Patter</label>
+                                <input type="range" id="volume-rain" min="0" max="1" step="0.05" value="0.5" oninput="updateMixerVolumes()">
+                            </div>
+                            <div class="mixer-channel">
+                                <label>🔥 Cozy Fire</label>
+                                <input type="range" id="volume-fire" min="0" max="1" step="0.05" value="0.0" oninput="updateMixerVolumes()">
+                            </div>
+                            <div class="mixer-channel">
+                                <label>📻 Vinyl Crackle</label>
+                                <input type="range" id="volume-vinyl" min="0" max="1" step="0.05" value="0.2" oninput="updateMixerVolumes()">
+                            </div>
+                            <div class="mixer-channel">
+                                <label>⚡ Distant Storm</label>
+                                <input type="range" id="volume-thunder" min="0" max="1" step="0.05" value="0.1" oninput="updateMixerVolumes()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Game 5: Fortune Teacup -->
+                    <div id="game-5" class="game-content">
+                        <h3>Fortune Tealeaves</h3>
+                        <p>Peer into the bottom of the teacup for a gentle reminder.</p>
+                        <p id="fortune-display" style="font-style:italic; margin: 30px 0;">Click below to read the leaves...</p>
+                        <button class="btn-action" onclick="readFortune()">Read Tealeaves</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Core View System
+        function switchView(view) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+            document.getElementById(`${view}-view`).classList.add('active');
+            document.getElementById(`nav-${view}`).classList.add('active');
+            if(view === 'games') {
+                const activeBtn = document.querySelector('.game-btn.active');
+                if (activeBtn) activeBtn.click();
+            }
+        }
+
+        function switchGame(gameNum, btnElement) {
+            document.querySelectorAll('.game-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.game-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`game-${gameNum}`).classList.add('active');
+            btnElement.classList.add('active');
+            
+            if(gameNum === 2) setTimeout(initCanvas, 50);
+        }
+
+        // --- 250 Slots Gallery Logic ---
+        const galleryGrid = document.getElementById('gallery-grid');
+        const totalSlots = 250;
+        const artIcons = ['🎨', '🍁', '☕', '🏡', '🦊', '🐈', '🌻', '🪵', '🕯️', '🍄', '🌌', '✨', '🍵', '📚', '🌲'];
+
+        function initGallery() {
+            galleryGrid.innerHTML = '';
+            for (let i = 1; i <= totalSlots; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'art-slot';
+                slot.id = `slot-${i}`;
+                
+                const slotNum = document.createElement('span');
+                slotNum.className = 'slot-number';
+                slotNum.innerText = i;
+                slot.appendChild(slotNum);
+
+                let savedImg = null;
+                try { savedImg = localStorage.getItem(`cozy-art-${i}`); } catch(e) {}
+
+                if (savedImg) { 
+                    if(savedImg.startsWith('ICON:')) {
+                        renderProceduralArt(slot, savedImg.split(':')[1]);
+                    } else {
+                        renderImage(slot, savedImg); 
+                    }
+                } else { 
+                    renderEmptySlot(slot, i); 
+                }
+                galleryGrid.appendChild(slot);
+            }
+        }
+
+        function renderEmptySlot(slot, index) {
+            slot.classList.remove('filled');
+            slot.querySelectorAll('.upload-icon, span:not(.slot-number), input').forEach(el => el.remove());
+            
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = (e) => handleUpload(e, slot, index);
+            slot.onclick = () => fileInput.click();
+
+            const icon = document.createElement('div');
+            icon.className = 'upload-icon';
+            icon.innerHTML = '＋';
+            const label = document.createElement('span');
+            label.style.fontSize = '0.8rem';
+            label.style.opacity = '0.7';
+            label.innerText = 'Add Art';
+
+            slot.appendChild(icon);
+            slot.appendChild(label);
+            slot.appendChild(fileInput);
+        }
+
+        function renderImage(slot, dataUrl) {
+            cleanSlotContents(slot);
+            slot.classList.add('filled');
+            slot.onclick = null;
+
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            
+            appendClearButton(slot);
+            slot.appendChild(img);
+        }
+
+        function renderProceduralArt(slot, iconSymbol) {
+            cleanSlotContents(slot);
+            slot.classList.add('filled');
+            slot.onclick = null;
+
+            const artEl = document.createElement('div');
+            artEl.className = 'procedural-art';
+            artEl.innerText = iconSymbol;
+
+            appendClearButton(slot);
+            slot.appendChild(artEl);
+        }
+
+        function cleanSlotContents(slot) {
+            const num = slot.querySelector('.slot-number');
+            slot.innerHTML = '';
+            if(num) slot.appendChild(num);
+        }
+
+        function appendClearButton(slot) {
+            const clearBtn = document.createElement('span');
+            clearBtn.innerHTML = '×';
+            clearBtn.style.cssText = 'position:absolute; top:2px; right:6px; color:white; background:rgba(0,0,0,0.5); width:18px; height:18px; border-radius:50%; text-align:center; line-height:16px; cursor:pointer; font-size:12px; z-index:10;';
+            clearBtn.onclick = (e) => {
+                e.stopPropagation();
+                const idx = slot.id.split('-')[1];
+                try { localStorage.removeItem(`cozy-art-${idx}`); } catch(err) {}
+                renderEmptySlot(slot, idx);
+            };
+            slot.appendChild(clearBtn);
+        }
+
+        function handleUpload(event, slot, index) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result;
+                try { localStorage.setItem(`cozy-art-${index}`, base64Data); } catch (error) {}
+                renderImage(slot, base64Data);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function autofillGallery() {
+            for (let i = 1; i <= totalSlots; i++) {
+                if (!localStorage.getItem(`cozy-art-${i}`)) {
+                    const randomIcon = artIcons[Math.floor(Math.random() * artIcons.length)];
+                    try { localStorage.setItem(`cozy-art-${i}`, `ICON:${randomIcon}`); } catch(e) {}
+                }
+            }
+            initGallery();
+        }
+
+        function clearAllGallery() {
+            if(confirm("Would you like to clear your entire cozy art gallery?")) {
+                for (let i = 1; i <= totalSlots; i++) {
+                    try { localStorage.removeItem(`cozy-art-${i}`); } catch(e) {}
+                }
+                initGallery();
+            }
+        }
+
+        // --- Game 1: Tea ---
+        let teaCount = 0;
+        function brewTea() {
+            teaCount++;
+            document.getElementById('tea-count').innerText = teaCount;
+        }
+
+        // --- Game 2: Doodle Pad ---
+        let canvas, ctx, drawing = false;
+        let currentColor = '#5d4037';
+
+        function initCanvas() {
+            canvas = document.getElementById('doodleCanvas');
+            if(!canvas) return;
+            ctx = canvas.getContext('2d');
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentColor;
+
+            canvas.onmousedown = (e) => { drawing = true; draw(e); };
+            canvas.onmousemove = draw;
+            window.onmouseup = () => drawing = false;
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function setDoodleColor(color, element) {
+            currentColor = color;
+            if(ctx) ctx.strokeStyle = color;
+            document.querySelectorAll('.color-dot').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function clearCanvas() { if(ctx) ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+        // --- Game 3: Plant ---
+        const stages = ['🌱', '🌿', '🪴', '🌻', '🌳'];
+        let currentStage = 0;
+        function waterPlant() {
+            if(currentStage < stages.length - 1) {
+                currentStage++;
+                document.getElementById('plant-stage').innerText = stages[currentStage];
+            }
+        }
+        function resetPlant() { currentStage = 0; document.getElementById('plant-stage').innerText = stages[0]; }
+
+        // --- Audio Context Engine (Shared) ---
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // --- Global Music Logic ---
+        let isMusicPlaying = false;
+        let musicSequencerInterval = null;
+        let musicGainNode = null;
+        let noteIndex = 0;
+        
+        const C3=130.81, E3=164.81, G3=196.00, B3=246.94, C4=261.63, D4=293.66, E4=329.63, G4=392.00, A4=440.00, B4=493.88, C5=523.25, D5=587.33, E5=659.25, G5=783.99;
+        const A2=110.00, F2=87.31, G2=98.00;
+
+        const songsList = [
+            [[C3, G3, E4], [B4], [G4], [E4], [A2, E3, C4], [G4], [E4], [C4], [F2, C3, A4], [E4], [C4], [A4], [G2, D3, B3], [G4], [D4], [B3]],
+            [[A2, E3, C4], [], [E4], [], [F2, C3, A4], [], [G4], [], [C3, G3, C4], [], [E4], [], [G2, D3, B3], [], [D4], []],
+            [[C3, E4], [G4], [C5], [B4], [A2, C4], [E4], [A4], [G4], [F2, A4], [C4], [F4], [E4], [G2, B3], [D4], [G4], [B4]],
+            [[C3, C5], [E4], [G4], [D5], [A2, C5], [E4], [A4], [B4], [F2, A4], [C4], [F4], [G4], [G2, G4], [B3], [D4], [E4]],
+            [[C3, G3, B3], [], [D4], [], [F2, C3, A4], [], [C4], [], [C3, G3, B3], [], [E4], [], [G2, D3, B3], [], [G4], []],
+            [[A2, E4], [A4], [C5], [E5], [F2, C4], [F4], [A4], [C5], [C3, G4], [C5], [E5], [G5], [G2, D4], [G4], [B4], [D5]],
+            [[F2, A4, E4], [], [], [], [G2, B3, D4], [], [], [], [A2, C4, E4], [], [], [], [E3, B3, G4], [], [], []]
+        ];
+
+        function getActiveMelody() {
+            const select = document.getElementById('song-select');
+            return songsList[parseInt(select.value) || 0];
+        }
+
+        function changeSong() {
+            if (isMusicPlaying) {
+                if (musicSequencerInterval) clearInterval(musicSequencerInterval);
+                noteIndex = 0;
+                const activeMelody = getActiveMelody();
+                musicSequencerInterval = setInterval(() => {
+                    if (!isMusicPlaying) return;
+                    playSoftSynthNote(activeMelody[noteIndex % activeMelody.length]);
+                    noteIndex++;
+                }, 350);
+            }
+        }
+
+        function toggleCalmMusic() {
+            const ctx = getAudioContext();
+            const btn = document.getElementById('music-btn');
+
+            if (!isMusicPlaying) {
+                isMusicPlaying = true;
+                btn.classList.add('playing');
+                btn.innerHTML = `<span>⏸</span> Turn Music Off`;
+                
+                musicGainNode = ctx.createGain();
+                musicGainNode.gain.setValueAtTime(0.08, ctx.currentTime);
+                musicGainNode.connect(ctx.destination);
+
+                noteIndex = 0;
+                const activeMelody = getActiveMelody();
+                musicSequencerInterval = setInterval(() => {
+                    if (!isMusicPlaying) return;
+                    playSoftSynthNote(activeMelody[noteIndex % activeMelody.length]);
+                    noteIndex++;
+                }, 350);
+            } else {
+                isMusicPlaying = false;
+                btn.classList.remove('playing');
+                btn.innerHTML = `<span>🎵</span> Turn Music On`;
+                
+                if (musicSequencerInterval) clearInterval(musicSequencerInterval);
+                if (musicGainNode) {
+                    musicGainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
+                    setTimeout(() => musicGainNode.disconnect(), 200);
+                }
+            }
+        }
+
+        function playSoftSynthNote(freqs) {
+            if (!audioCtx || !isMusicPlaying || !freqs || freqs.length === 0) return;
+            const noteArray = Array.isArray(freqs) ? freqs : [freqs];
+            
+            noteArray.forEach((freq, index) => {
+                let osc = audioCtx.createOscillator();
+                let noteGain = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                
+                const volumeAllocation = 0.5 / noteArray.length;
+                const acousticStrumStagger = index * 0.02;
+                const startTime = audioCtx.currentTime + acousticStrumStagger;
+                
+                noteGain.gain.setValueAtTime(0, startTime);
+                noteGain.gain.linearRampToValueAtTime(volumeAllocation, startTime + 0.08);
+                noteGain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.6);
+                
+                let lowpass = audioCtx.createBiquadFilter();
+                lowpass.type = 'lowpass';
+                lowpass.frequency.setValueAtTime(900, audioCtx.currentTime);
+
+                osc.connect(lowpass);
+                lowpass.connect(noteGain);
+                noteGain.connect(musicGainNode);
+                
+                osc.start(startTime);
+                osc.stop(startTime + 1.7);
+            });
+        }
+
+        // --- Game 4: Soundscape Mixer ---
+        let isMixerRunning = false;
+        let channels = {
+            rain: { gainNode: null, source: null },
+            fire: { gainNode: null, source: null },
+            vinyl: { gainNode: null, source: null },
+            thunder: { gainNode: null, source: null }
+        };
+
+        function initAudioEngine() {
+            const ctx = getAudioContext();
+            if (channels.rain.source) return;
+            
+            channels.rain.gainNode = ctx.createGain();
+            channels.rain.source = createNoiseBufferSource(ctx, 'brown');
+            let rainFilter = ctx.createBiquadFilter();
+            rainFilter.type = 'lowpass';
+            rainFilter.frequency.value = 900;
+            channels.rain.source.connect(rainFilter);
+            rainFilter.connect(channels.rain.gainNode);
+            channels.rain.gainNode.connect(ctx.destination);
+            
+            channels.fire.gainNode = ctx.createGain();
+            channels.fire.source = createNoiseBufferSource(ctx, 'pink');
+            let fireFilter = ctx.createBiquadFilter();
+            fireFilter.type = 'bandpass';
+            fireFilter.frequency.value = 450;
+            channels.fire.source.connect(fireFilter);
+            fireFilter.connect(channels.fire.gainNode);
+            channels.fire.gainNode.connect(ctx.destination);
+            
+            setInterval(() => {
+                if(isMixerRunning && document.getElementById('volume-fire').value > 0) {
+                    let targetVol = document.getElementById('volume-fire').value * (0.4 + Math.random() * 0.6) * 0.4;
+                    channels.fire.gainNode.gain.setValueAtTime(targetVol, ctx.currentTime);
+                }
+            }, 80);
+
+            channels.vinyl.gainNode = ctx.createGain();
+            channels.vinyl.source = createNoiseBufferSource(ctx, 'white');
+            let vinylFilter = ctx.createBiquadFilter();
+            vinylFilter.type = 'highpass';
+            vinylFilter.frequency.value = 8000;
+            channels.vinyl.source.connect(vinylFilter);
+            vinylFilter.connect(channels.vinyl.gainNode);
+            channels.vinyl.gainNode.connect(ctx.destination);
+
+            setInterval(() => {
+                if(isMixerRunning && document.getElementById('volume-vinyl').value > 0) {
+                    let baseVal = document.getElementById('volume-vinyl').value;
+                    let spike = Math.random() > 0.85 ? baseVal * 0.4 : baseVal * 0.03;
+                    channels.vinyl.gainNode.gain.setValueAtTime(spike, ctx.currentTime);
+                }
+            }, 40);
+
+            channels.thunder.gainNode = ctx.createGain();
+            channels.thunder.gainNode.connect(ctx.destination);
+            
+            setInterval(() => {
+                if (isMixerRunning && Math.random() > 0.96) {
+                    triggerDistantThunder();
+                }
+            }, 3000);
+
+            channels.rain.source.start(0);
+            channels.fire.source.start(0);
+            channels.vinyl.source.start(0);
+        }
+
+        function createNoiseBufferSource(ctx, color) {
+            let bufferSize = 3 * ctx.sampleRate;
+            let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            let data = buffer.getChannelData(0);
+            let lastOut = 0.0;
+
+            for (let i = 0; i < bufferSize; i++) {
+                let white = Math.random() * 2 - 1;
+                if (color === 'brown') {
+                    data[i] = (lastOut + (0.02 * white)) / 1.02;
+                    lastOut = data[i];
+                    data[i] *= 4.0; 
+                } else if (color === 'pink') {
+                    data[i] = (lastOut + (0.12 * white)) / 1.12;
+                    lastOut = data[i];
+                    data[i] *= 2.5;
+                } else {
+                    data[i] = white * 0.2;
+                }
+            }
+            let source = ctx.createBufferSource();
+            source.buffer = buffer;
+            source.loop = true;
+            return source;
+        }
+
+        function triggerDistantThunder() {
+            let thunderSliderVol = document.getElementById('volume-thunder').value;
+            if (thunderSliderVol <= 0) return;
+            const ctx = getAudioContext();
+
+            let osc = ctx.createOscillator();
+            let thunderGain = ctx.createGain();
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(45 + (Math.random() * 25), ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(25, ctx.currentTime + 3.0);
+
+            thunderGain.gain.setValueAtTime(0.001, ctx.currentTime);
+            thunderGain.gain.linearRampToValueAtTime(thunderSliderVol * 0.6, ctx.currentTime + 0.5);
+            thunderGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 4.0);
+
+            let lowpass = ctx.createBiquadFilter();
+            lowpass.type = 'lowpass';
+            lowpass.frequency.value = 100;
+
+            osc.connect(lowpass);
+            lowpass.connect(thunderGain);
+            thunderGain.connect(channels.thunder.gainNode);
+            
+            osc.start();
+            osc.stop(ctx.currentTime + 4.1);
+        }
+
+        function toggleMixerSystem() {
+            let btn = document.getElementById('mixer-toggle-btn');
+            const ctx = getAudioContext();
+            if (!isMixerRunning) {
+                if (isMusicPlaying) toggleCalmMusic();
+                initAudioEngine();
+                isMixerRunning = true;
+                btn.innerText = "⏸ Pause Mixer Engine";
+                btn.style.backgroundColor = "var(--accent-soft)";
+                updateMixerVolumes();
+            } else {
+                isMixerRunning = false;
+                btn.innerText = "▶ Start Mixer Engine";
+                btn.style.backgroundColor = "var(--accent-warm)";
+                for (let ch in channels) {
+                    if(channels[ch].gainNode) channels[ch].gainNode.gain.setValueAtTime(0, ctx.currentTime);
+                }
+            }
+        }
+
+        function updateMixerVolumes() {
+            if (!isMixerRunning || !audioCtx) return;
+            channels.rain.gainNode.gain.setValueAtTime(document.getElementById('volume-rain').value * 0.6, audioCtx.currentTime);
+            channels.fire.gainNode.gain.setValueAtTime(document.getElementById('volume-fire').value * 0.4, audioCtx.currentTime);
+            channels.vinyl.gainNode.gain.setValueAtTime(document.getElementById('volume-vinyl').value * 0.3, audioCtx.currentTime);
+        }
+
+        // --- Game 5: Fortune ---
+        const fortunes = ["Take things one step at a time.", "A warm drink clears a busy head.", "It is okay to pause and breathe.", "Your creativity is meaningful.", "Be gentle with yourself today."];
+        function readFortune() {
+            document.getElementById('fortune-display').innerText = `"${fortunes[Math.floor(Math.random() * fortunes.length)]}"`;
+        }
+
+        window.onload = () => { initGallery(); };
+    </script>
+</body>
+</html>
