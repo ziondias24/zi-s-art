@@ -54,7 +54,6 @@
             align-items: center;
             gap: 15px;
             margin-top: 20px;
-            flex-wrap: wrap;
         }
 
         nav {
@@ -62,7 +61,7 @@
             gap: 15px;
         }
 
-        nav button, .music-toggle, .song-select {
+        nav button, .music-toggle {
             background-color: var(--card-color);
             border: 2px solid var(--border-color);
             color: var(--text-dark);
@@ -90,14 +89,6 @@
         .music-toggle.playing {
             background-color: var(--accent-soft);
             color: white;
-        }
-
-        .song-select {
-            font-family: inherit;
-            font-size: 0.9rem;
-            outline: none;
-            cursor: pointer;
-            padding: 9px 15px;
         }
 
         .container {
@@ -404,28 +395,9 @@
                 <button id="nav-gallery" class="active" onclick="switchView('gallery')">Art Gallery (250 Slots)</button>
                 <button id="nav-games" onclick="switchView('games')">Cozy Games (15)</button>
             </nav>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <select id="song-select" class="song-select" onchange="changeSong()">
-                    <option value="0">Melody 1: Warm Blanket</option>
-                    <option value="1">Melody 2: Morning Fog</option>
-                    <option value="2">Melody 3: Steaming Cup</option>
-                    <option value="3">Melody 4: Evening Breeze</option>
-                    <option value="4">Melody 5: Gentle Rain</option>
-                    <option value="5">Melody 6: Soft Velvet</option>
-                    <option value="6">Melody 7: Lazy Sunday</option>
-                    <option value="7">Melody 8: Amber Glow</option>
-                    <option value="8">Melody 9: Quiet Shore</option>
-                    <option value="9">Melody 10: Dreamcatcher</option>
-                    <option value="10">Melody 11: Cat Purr Waltz</option>
-                    <option value="11">Melody 12: Falling Leaves</option>
-                    <option value="12">Melody 13: Cinnamon Tea</option>
-                    <option value="13">Melody 14: Twilight Sky</option>
-                    <option value="14">Melody 15: Deep Hearth</option>
-                </select>
-                <button id="music-btn" class="music-toggle" onclick="toggleCalmMusic()">
-                    <span>🎵</span> Turn Music On
-                </button>
-            </div>
+            <button id="music-btn" class="music-toggle" onclick="toggleCalmMusic()">
+                <span>🎵</span> Turn Music On
+            </button>
         </div>
     </header>
 
@@ -787,49 +759,13 @@
             return audioCtx;
         }
 
-        // --- Global Calm Music Loop Logic (15 Melodies) ---
+        // --- Global Calm Music Loop Logic ---
         let isMusicPlaying = false;
         let musicSequencerInterval = null;
         let musicGainNode = null;
         let noteIndex = 0;
         
-        // 15 Distinct 4-Note Cozy Loops
-        const songsList = [
-            [261.63, 329.63, 392.00, 493.88], // 1. Warm Blanket
-            [293.66, 349.23, 440.00, 523.25], // 2. Morning Fog
-            [329.63, 392.00, 493.88, 587.33], // 3. Steaming Cup
-            [349.23, 440.00, 523.25, 659.25], // 4. Evening Breeze
-            [392.00, 493.88, 587.33, 698.46], // 5. Gentle Rain
-            [440.00, 523.25, 659.25, 783.99], // 6. Soft Velvet
-            [261.63, 349.23, 392.00, 523.25], // 7. Lazy Sunday
-            [293.66, 392.00, 440.00, 587.33], // 8. Amber Glow
-            [329.63, 440.00, 493.88, 659.25], // 9. Quiet Shore
-            [349.23, 523.25, 587.33, 698.46], // 10. Dreamcatcher
-            [220.00, 261.63, 329.63, 392.00], // 11. Cat Purr Waltz
-            [246.94, 293.66, 349.23, 440.00], // 12. Falling Leaves
-            [277.18, 329.63, 415.30, 493.88], // 13. Cinnamon Tea
-            [311.13, 369.99, 466.16, 554.37], // 14. Twilight Sky
-            [196.00, 246.94, 293.66, 392.00]  // 15. Deep Hearth
-        ];
-
-        function getActiveMelody() {
-            const select = document.getElementById('song-select');
-            return songsList[parseInt(select.value) || 0];
-        }
-
-        function changeSong() {
-            if (isMusicPlaying) {
-                // Restart sequencer smoothly with new choice
-                if (musicSequencerInterval) clearInterval(musicSequencerInterval);
-                noteIndex = 0;
-                const activeMelody = getActiveMelody();
-                musicSequencerInterval = setInterval(() => {
-                    if (!isMusicPlaying) return;
-                    playSoftSynthNote(activeMelody[noteIndex % activeMelody.length]);
-                    noteIndex++;
-                }, 600);
-            }
-        }
+        const cozyMelody = [261.63, 329.63, 392.00, 493.88, 349.23, 440.00, 523.25, 659.25, 440.00, 523.25, 659.25, 783.99, 392.00, 493.88, 587.33, 783.99];
 
         function toggleCalmMusic() {
             const ctx = getAudioContext();
@@ -845,10 +781,9 @@
                 musicGainNode.connect(ctx.destination);
 
                 noteIndex = 0;
-                const activeMelody = getActiveMelody();
                 musicSequencerInterval = setInterval(() => {
                     if (!isMusicPlaying) return;
-                    playSoftSynthNote(activeMelody[noteIndex % activeMelody.length]);
+                    playSoftSynthNote(cozyMelody[noteIndex % cozyMelody.length]);
                     noteIndex++;
                 }, 600);
             } else {
@@ -1016,8 +951,8 @@
         function toggleMixerSystem() {
             let btn = document.getElementById('mixer-toggle-btn');
             const ctx = getAudioContext();
+            if (!isMusicPlaying) toggleCalmMusic(); // Safe start context
             if (!isMixerRunning) {
-                if (isMusicPlaying) toggleCalmMusic(); // Turn off standard music before starting mixer soundscape[cite: 1]
                 initAudioEngine();
                 isMixerRunning = true;
                 btn.innerText = "⏸ Pause Mixer Engine";
